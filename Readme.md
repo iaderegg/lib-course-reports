@@ -1,4 +1,4 @@
-#Libreria para reportes de curso
+# Libreria para reportes de curso
 
 _El archivo lib.php del presente repositorio contiene algunas funciones que permite extraer datos acerca de 
 los estudiantes mejor calificados, las secciones y el estado de finalización de los módulos de un curso para un estudiante en particular._
@@ -65,15 +65,9 @@ get_best_students_nosql:  A diferencia de la función anterior (get_best_student
                 [finalgrade] => 100.00000
                 [position] => 3
             )
-
-        [3] => Array
-            (
-                [userid] => 98635
-                [finalgrade] => 98.00000
-                [position] => 4
-            )
     )
 ```
-
-    get_info_course_sections: Dado un ID de curso retorna las secciones del curso y su cantidad correspondiente de recursos y el porcentaje de      
-                              finalización de dichos recursos por sección.
+```
+get_info_course_sections_by_user: Dado un ID de curso retorna las secciones del curso y su cantidad correspondiente de recursos y el porcentaje de      
+                                  finalización de dichos recursos por sección.
+```

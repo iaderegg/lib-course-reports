@@ -103,26 +103,29 @@ function get_best_students_nosql($courseid, $n_students) {
 /**
  * get_info_course_sections
  * @param int $courseid    Course ID
+ * @param int $userid      User ID
  * @return stdClass
  * 
  * @author Iader E. Garcia G. <iadergg@gmail.com>
  */
 
-function get_info_course_sections($courseid, $userid) {
+function get_info_course_sections_by_user($courseid, $userid) {
 
     global $DB;
 
     $sql_query =   "SELECT
                         sections.id,
-                        sections.section AS position,
+                        sections.section AS section_position,
                         sections.name AS section_name,
-                        COUNT(DISTINCT modules_completion.coursemoduleid) AS modules
+                        COUNT(DISTINCT modules_completion.coursemoduleid) AS modules,
+                        SUM(modules_completion.completionstate)/COUNT(DISTINCT modules_completion.coursemoduleid)*100 AS percent
                     FROM
                         {course_sections} AS sections
                         INNER JOIN {course_modules} AS modules ON modules.section = sections.id
                         LEFT JOIN {course_modules_completion} AS modules_completion ON modules_completion.coursemoduleid = modules.id
                     WHERE
                         sections.course = $courseid
+                        AND modules_completion.userid = $userid
                     GROUP BY
                         sections.id,
                         position,
@@ -133,5 +136,3 @@ function get_info_course_sections($courseid, $userid) {
     return $info_sections_array;
 }
 
-//print_r(get_best_students_nosql(32542, 10));
-print_r(get_best_students(32542, 10));
