@@ -10,14 +10,14 @@ require_once '../../../config.php';
  * 
  * @author Iader E. Garcia G. <iadergg@gmail.com>
  */
-function get_best_students($courseid, $n_students) {
+function get_best_students($courseid, $nstudents) {
 
     global $DB;
 
-    $sql_query  =   "SELECT 
+    $sqlquery  =   "SELECT 
                         users.id AS userid, 
                         ggrades.finalgrade AS finalgrade, 
-                        ROW_NUMBER() OVER (ORDER BY ggrades.finalgrade DESC) AS list_position
+                        ROW_NUMBER() OVER (ORDER BY ggrades.finalgrade DESC) AS position
                     FROM 
                         {grade_grades} AS ggrades 
                         INNER JOIN {grade_items} AS gitems ON ggrades.itemid = gitems.id
@@ -30,11 +30,11 @@ function get_best_students($courseid, $n_students) {
                         AND users.deleted = 0
                     ORDER BY 
                         ggrades.finalgrade DESC
-                    LIMIT $n_students";
+                    LIMIT $nstudents";
 
-    $best_students_array = $DB->get_records_sql($sql_query);
+    $beststudentarray = $DB->get_records_sql($sqlquery);
 
-    return $best_students_array;
+    return $beststudentarray;
 }
 
 /**
@@ -45,7 +45,7 @@ function get_best_students($courseid, $n_students) {
  * 
  * @author Iader E. Garcia G. <iadergg@gmail.com>
  */
-function get_best_students_nosql($courseid, $n_students) {
+function get_best_students_nosql($courseid, $nstudents) {
 
     global $DB, $CFG;
 
@@ -54,50 +54,50 @@ function get_best_students_nosql($courseid, $n_students) {
 
     $coursecontext = context_course::instance($courseid);
 
-    $users_objects = get_enrolled_users($coursecontext, '', 0, 'u.id');
+    $usersenrolled = get_enrolled_users($coursecontext, '', 0, 'u.id');
 
-    $users_array = array();
+    $usersarray = array();
 
-    foreach ($users_objects as $user) {
-        array_push($users_array, $user->id);
+    foreach ($usersenrolled as $user) {
+        array_push($usersarray, $user->id);
     }
 
-    $grades_info = grade_get_course_grades($courseid, $users_array)->grades;
+    $gradesinfo = grade_get_course_grades($courseid, $usersarray)->grades;
 
     $grades = array();
 
     // Order 
-    foreach(array_keys($grades_info) as $key) {
-        $grades[$key] = $grades_info[$key]->grade;
-        $grades_info[$key]->userid = $key;
+    foreach(array_keys($gradesinfo) as $key) {
+        $grades[$key] = $gradesinfo[$key]->grade;
+        $gradesinfo[$key]->userid = $key;
     }
 
-    array_multisort($grades, SORT_DESC, $grades_info);
+    array_multisort($grades, SORT_DESC, $gradesinfo);
 
     $position = 0;
-    $best_students_array = array();
+    $beststudents = array();
 
-    foreach(array_keys($grades_info) as $key) {
+    foreach(array_keys($gradesinfo) as $key) {
         $position++;
 
-        if($grades_info[$key]->grade == NULL){
-            $grades_info[$key]->grade = "No registra";
+        if($gradesinfo[$key]->grade == NULL){
+            $gradesinfo[$key]->grade = "-";
         }
 
         $temp = array(
-            'userid' => $grades_info[$key]->userid,
-            'finalgrade' => $grades_info[$key]->grade,
+            'userid' => $gradesinfo[$key]->userid,
+            'finalgrade' => $gradesinfo[$key]->grade,
             'position' => $position
         );
 
-        array_push($best_students_array, $temp);
+        array_push($beststudents, $temp);
 
-        if($position == $n_students) {
+        if($position == $nstudents) {
             break;
         }
     }
 
-    return $best_students_array;
+    return $beststudents;
 }
 
 /**
@@ -109,11 +109,11 @@ function get_best_students_nosql($courseid, $n_students) {
  * @author Iader E. Garcia G. <iadergg@gmail.com>
  */
 
-function get_info_course_sections_by_user($courseid, $userid) {
+function get_info_course_sections_by_user($courseid, $userid) { 
 
     global $DB;
 
-    $sql_query =   "SELECT
+    $sqlquery =   "SELECT
                         sections.id,
                         sections.section AS section_position,
                         sections.name AS section_name,
@@ -122,17 +122,16 @@ function get_info_course_sections_by_user($courseid, $userid) {
                     FROM
                         {course_sections} AS sections
                         INNER JOIN {course_modules} AS modules ON modules.section = sections.id
-                        LEFT JOIN {course_modules_completion} AS modules_completion ON modules_completion.coursemoduleid = modules.id
+                        INNER JOIN {course_modules_completion} AS modules_completion ON modules_completion.coursemoduleid = modules.id
                     WHERE
                         sections.course = $courseid
                         AND modules_completion.userid = $userid
                     GROUP BY
                         sections.id,
-                        position,
+                        section_position,
                         section_name";
 
-    $info_sections_array = $DB->get_records_sql($sql_query);
+    $infosections = $DB->get_records_sql($sqlquery);
 
-    return $info_sections_array;
+    return $infosections;
 }
-
