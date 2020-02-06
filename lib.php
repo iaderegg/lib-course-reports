@@ -30,9 +30,9 @@ function get_best_students($courseid, $nstudents) {
                         AND users.deleted = 0
                     ORDER BY 
                         ggrades.finalgrade DESC
-                    LIMIT $nstudents";
+                    LIMIT :nstudents";
 
-    $beststudentarray = $DB->get_records_sql($sqlquery);
+    $beststudentarray = $DB->get_records_sql($sqlquery, array('nstudents'=>$nstudents));
 
     return $beststudentarray;
 }
@@ -124,14 +124,14 @@ function get_info_course_sections_by_user($courseid, $userid) {
                         INNER JOIN {course_modules} AS modules ON modules.section = sections.id
                         INNER JOIN {course_modules_completion} AS modules_completion ON modules_completion.coursemoduleid = modules.id
                     WHERE
-                        sections.course = $courseid
-                        AND modules_completion.userid = $userid
+                        sections.course = :courseid
+                        AND modules_completion.userid = :userid
                     GROUP BY
                         sections.id,
                         section_position,
                         section_name";
 
-    $infosections = $DB->get_records_sql($sqlquery);
+    $infosections = $DB->get_records_sql($sqlquery, array('courseid'=>$courseid, 'userid'=>$userid));
 
     return $infosections;
 }
