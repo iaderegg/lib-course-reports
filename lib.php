@@ -114,24 +114,18 @@ function get_info_course_sections_by_user($courseid, $userid) {
     global $DB;
 
     $sqlquery =   "SELECT
+                        modules.id AS coursemoduleid,
                         sections.id,
                         sections.section AS section_position,
-                        sections.name AS section_name,
-                        COUNT(DISTINCT modules_completion.coursemoduleid) AS modules,
-                        SUM(modules_completion.completionstate)/COUNT(DISTINCT modules_completion.coursemoduleid)*100 AS percent
+                        sections.name AS section_name
                     FROM
                         {course_sections} AS sections
                         INNER JOIN {course_modules} AS modules ON modules.section = sections.id
-                        INNER JOIN {course_modules_completion} AS modules_completion ON modules_completion.coursemoduleid = modules.id
                     WHERE
                         sections.course = :courseid
-                        AND modules_completion.userid = :userid
-                    GROUP BY
-                        sections.id,
-                        section_position,
-                        section_name";
+                        AND modules.completion <> 0";
 
-    $infosections = $DB->get_records_sql($sqlquery, array('courseid'=>$courseid, 'userid'=>$userid));
+    $infosections = $DB->get_records_sql($sqlquery, array('courseid'=>$courseid));
 
     return $infosections;
 }
